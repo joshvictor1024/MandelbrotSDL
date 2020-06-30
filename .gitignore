@@ -1,0 +1,13 @@
+.vs/
+bin/
+bin-int/
+
+SDL_Mandelbrot/src/vendor/boost_1_72_0/
+SDL_Mandelbrot/src/vendor/glm-0.9.9.6/doc/
+SDL_Mandelbrot/src/vendor/glm-0.9.9.6/test/
+SDL_Mandelbrot/src/vendor/glm-0.9.9.6/util/
+
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
