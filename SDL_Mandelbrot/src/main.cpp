@@ -8,8 +8,9 @@
 #include "stb_image_write.h"
 
 #include <complex>
+
 #include "engine.h"
-#include "color.h"
+#include "constants.h"
 #include "logging.h"
 
 //constexpr int PRECISION = 25;
