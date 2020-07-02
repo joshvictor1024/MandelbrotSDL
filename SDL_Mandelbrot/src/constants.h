@@ -1,5 +1,18 @@
-#ifndef COLOR_H
-#define COLOR_H
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+// Window ///////////////////////////////////////////////////////
+
+constexpr int WINDOW_WIDTH = 1280;
+constexpr int WINDOW_HEIGHT = 720;
+
+// Graphics ///////////////////////////////////////////////////////
+
+constexpr int MAX_FRAMERATE = 5;
+
+// Color Data ///////////////////////////////////////////////////////
+
+constexpr float MAX_PIXEL_LENGTH = 0.01f;
 
 constexpr int CHANNEL = 3;
 constexpr int RGB888_SIZE = 4;
@@ -54,6 +67,7 @@ constexpr uint8_t COLOR_UNBOUNDED[COLOR_PALETTE_STRIDE * ((THRESHOLD + INTERVAL 
 	//200, 120, 40,
 	//200, 70, 20
 };
+
 constexpr int RGB888_OFFSETR = 2;
 constexpr int RGB888_OFFSETG = 1;
 constexpr int RGB888_OFFSETB = 0;
@@ -65,5 +79,11 @@ inline void color(uint8_t* pixels, int pos, int it)
 	pixels[pos + RGB888_OFFSETB] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 2];
 }
 
+//#include "boost\multiprecision\cpp_bin_float.hpp"
+//#include "boost\multiprecision\cpp_complex.hpp"
 
-#endif // !COLOR_H
+//constexpr int PRECISION = 25;
+//typedef boost::multiprecision::number<boost::multiprecision::backends::cpp_bin_float<PRECISION>> Position_t;
+//typedef boost::multiprecision::cpp_complex<PRECISION> Complex_t;
+
+#endif // !CONSTANTS_H

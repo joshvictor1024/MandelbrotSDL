@@ -26,7 +26,7 @@ void init(int windowedWidth, int windowedHeight)
 
 	//Create window
 	gSDLWindow = SDL_CreateWindow(
-		"Mandelbrot alpha v0.1", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		"Mandelbrot", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		windowedWidth, windowedHeight, SDL_WINDOW_SHOWN);
 	if (!gSDLWindow)
 	{
