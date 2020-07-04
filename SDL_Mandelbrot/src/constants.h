@@ -1,6 +1,21 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <complex>
+
+// Types ///////////////////////////////////////////////////////
+
+typedef double Position_t;
+typedef std::complex<Position_t> Complex_t;
+typedef uint16_t Iteration_t;
+typedef uint8_t PixelData_t;
+
+constexpr Position_t absSquared(const Complex_t& c) // TODO: proper location
+{
+    return (c.real() * c.real() + c.imag() + c.imag());
+}
+
+
 // Window ///////////////////////////////////////////////////////
 
 constexpr int WINDOW_WIDTH = 1280;
@@ -8,7 +23,14 @@ constexpr int WINDOW_HEIGHT = 720;
 
 // Graphics ///////////////////////////////////////////////////////
 
-constexpr int MAX_FRAMERATE = 5;
+constexpr int MAX_FRAMERATE = 50;
+constexpr int FRAMETIME = 1000 / MAX_FRAMERATE;
+
+constexpr Position_t DEFAULT_X = -2.4;
+constexpr Position_t DEFAULT_Y = 1.075;
+constexpr Position_t DEFAULT_PIXEL_LENGTH = 0.003;
+
+constexpr float SCROLL_ZOOM_IN = 1.0f / 0.8f;
 
 // Color Data ///////////////////////////////////////////////////////
 
