@@ -22,6 +22,11 @@ A mandelbrot set fractal explorer using SDL2.0 for rendering
 
 ## DevLog
 
+### 2020-07-06
+
+- Now recognizes and skip computing already computed chunks
+- Code style clean-up
+
 ### 2020-07-04
 
 - First chunk based rendering

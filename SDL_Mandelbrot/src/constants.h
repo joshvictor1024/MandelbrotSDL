@@ -5,12 +5,12 @@
 
 // Types ///////////////////////////////////////////////////////
 
-typedef double Position_t;
-typedef std::complex<Position_t> Complex_t;
+typedef double Number_t;
+typedef std::complex<Number_t> Complex_t;
 typedef uint16_t Iteration_t;
 typedef uint8_t PixelData_t;
 
-constexpr Position_t absSquared(const Complex_t& c) // TODO: proper location
+constexpr Number_t absSquared(const Complex_t& c) // TODO: proper location
 {
     return (c.real() * c.real() + c.imag() + c.imag());
 }
@@ -26,9 +26,9 @@ constexpr int WINDOW_HEIGHT = 720;
 constexpr int MAX_FRAMERATE = 50;
 constexpr int FRAMETIME = 1000 / MAX_FRAMERATE;
 
-constexpr Position_t DEFAULT_X = -2.4;
-constexpr Position_t DEFAULT_Y = 1.075;
-constexpr Position_t DEFAULT_PIXEL_LENGTH = 0.003;
+constexpr Number_t DEFAULT_X = -2.4;
+constexpr Number_t DEFAULT_Y = 1.075;
+constexpr Number_t DEFAULT_PIXEL_LENGTH = 0.003;
 
 constexpr float SCROLL_ZOOM_IN = 1.0f / 0.8f;
 
@@ -105,7 +105,7 @@ inline void color(uint8_t* pixels, int pos, int it)
 //#include "boost\multiprecision\cpp_complex.hpp"
 
 //constexpr int PRECISION = 25;
-//typedef boost::multiprecision::number<boost::multiprecision::backends::cpp_bin_float<PRECISION>> Position_t;
+//typedef boost::multiprecision::number<boost::multiprecision::backends::cpp_bin_float<PRECISION>> Number_t;
 //typedef boost::multiprecision::cpp_complex<PRECISION> Complex_t;
 
 #endif // !CONSTANTS_H

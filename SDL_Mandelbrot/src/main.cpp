@@ -11,153 +11,147 @@
 
 // Utility ///////////////////////////////////////////////////////
 
-//constexpr Position_t absSquared(const Complex_t& c)
+//constexpr Number_t absSquared(const Complex_t& c)
 //{
 //	return (c.real() * c.real() + c.imag() + c.imag());
 //}
 
 // Computation ///////////////////////////////////////////////////////
 
-void compute(
-    Iteration_t* iterations,
-    std::vector<std::future<void>>& futures,
-	const Position_t originX,
-	const Position_t originY,
-	const Position_t texelLength,
-	const Iteration_t threshold
-)
-{
-	int pos = 0;
-
-    // Pixel data starts from top left
-    // Dividing window into 1-pixel-high rows for async computation
-
-	for (int texelY = 0; texelY > -1 * WINDOW_HEIGHT; --texelY, pos += WINDOW_WIDTH)
-	{
-		auto computeRow = [iterations, originX, originY, texelLength, threshold, texelY](int pos) {
-
-			for (int texelX = 0; texelX < WINDOW_WIDTH; ++texelX, ++pos)
-			{
-				Complex_t c = { 0.0, 0.0 };
-				Complex_t dc =
-                {
-					texelX * texelLength + originX,
-					texelY * texelLength + originY
-				};
-
-                Iteration_t it = 0;
-				for (; it < threshold; ++it)
-				{
-					c = c * c + dc;
-
-					if (absSquared(c) > static_cast<Position_t>(2 * 2))
-					{
-						break;
-					}
-				}
-                iterations[pos] = it;
-			}
-		};
-
-		futures.push_back(std::async(std::launch::async, computeRow, pos));
-	}
-}
+//void compute(
+//    Iteration_t* iterations,
+//    std::vector<std::future<void>>& futures,
+//	const Number_t originX,
+//	const Number_t originY,
+//	const Number_t texelLength,
+//	const Iteration_t threshold
+//)
+//{
+//	int pos = 0;
+//
+//    // Pixel data starts from top left
+//    // Dividing window into 1-pixel-high rows for async computation
+//
+//	for (int texelY = 0; texelY > -1 * WINDOW_HEIGHT; --texelY, pos += WINDOW_WIDTH)
+//	{
+//		auto computeRow = [iterations, originX, originY, texelLength, threshold, texelY](int pos) {
+//
+//			for (int texelX = 0; texelX < WINDOW_WIDTH; ++texelX, ++pos)
+//			{
+//				Complex_t c = { 0.0, 0.0 };
+//				Complex_t dc =
+//                {
+//					texelX * texelLength + originX,
+//					texelY * texelLength + originY
+//				};
+//
+//                Iteration_t it = 0;
+//				for (; it < threshold; ++it)
+//				{
+//					c = c * c + dc;
+//
+//					if (absSquared(c) > static_cast<Number_t>(2 * 2))
+//					{
+//						break;
+//					}
+//				}
+//                iterations[pos] = it;
+//			}
+//		};
+//
+//		futures.push_back(std::async(std::launch::async, computeRow, pos));
+//	}
+//}
 
 // Graphics ///////////////////////////////////////////////////////
 
-void updateTexture(SDL_Texture* tex, Iteration_t* iterations)
-{
-    uint8_t* pixelsTex;
-    int pitchDiscarded;
-
-    SDL_LockTexture(tex, nullptr, (void**)(&pixelsTex), &pitchDiscarded);    
-    for (int pos = 0; pos < WINDOW_WIDTH * WINDOW_HEIGHT; ++pos)
-    {
-        color(pixelsTex, pos * RGB888_SIZE, iterations[pos]);
-    }
-    SDL_UnlockTexture(tex);
-}
-
-void update(
-    SDL_Texture* tex,
-    Iteration_t* iterations,
-	const Position_t originX,
-	const Position_t originY,
-	const Position_t pixelLength,
-	const int threshold
-)
-{
-    std::vector<std::future<void>> futures;
-    futures.reserve(WINDOW_HEIGHT);
-
-    compute(iterations, futures, originX, originY, pixelLength, threshold);
-
-    for (auto& i : futures)
-    {
-        i.get();
-    }
-
-    updateTexture(tex, iterations);
-}
+//void updateTexture(SDL_Texture* tex, Iteration_t* iterations)
+//{
+//    uint8_t* pixelsTex;
+//    int pitchDiscarded;
+//
+//    SDL_LockTexture(tex, nullptr, (void**)(&pixelsTex), &pitchDiscarded);    
+//    for (int pos = 0; pos < WINDOW_WIDTH * WINDOW_HEIGHT; ++pos)
+//    {
+//        color(pixelsTex, pos * RGB888_SIZE, iterations[pos]);
+//    }
+//    SDL_UnlockTexture(tex);
+//}
+//
+//void update(
+//    SDL_Texture* tex,
+//    Iteration_t* iterations,
+//	const Number_t originX,
+//	const Number_t originY,
+//	const Number_t pixelLength,
+//	const int threshold
+//)
+//{
+//    std::vector<std::future<void>> futures;
+//    futures.reserve(WINDOW_HEIGHT);
+//
+//    compute(iterations, futures, originX, originY, pixelLength, threshold);
+//
+//    for (auto& i : futures)
+//    {
+//        i.get();
+//    }
+//
+//    updateTexture(tex, iterations);
+//}
 
 // TODO: check if it still works
-void convertToPng(SDL_Texture* tex, const char* fileName)
-{
-	std::vector<std::future<void>> futures;
-	futures.reserve(WINDOW_HEIGHT);
-
-	uint8_t* pixelsTex;
-	uint8_t* pixelsPng = new uint8_t[WINDOW_WIDTH * WINDOW_HEIGHT * CHANNEL];
-	int pitchDiscarded;
-
-	SDL_LockTexture(tex, nullptr, (void**)(&pixelsTex), &pitchDiscarded);
-
-	int pixel = 0;
-	for (int y = 0; y < WINDOW_HEIGHT; y++, pixel+= WINDOW_WIDTH)
-	{
-		auto convertToPngSub = [pixelsTex, pixelsPng](int pixel) {
-
-			for (int x = 0; x < WINDOW_WIDTH; x++, pixel++)
-			{
-				pixelsPng[pixel * CHANNEL + 0] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETR];
-				pixelsPng[pixel * CHANNEL + 1] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETG];
-				pixelsPng[pixel * CHANNEL + 2] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETB];
-			}
-		};
-		futures.push_back(std::async(std::launch::async, convertToPngSub, pixel));
-	}
-
-	stbi_write_png(fileName, WINDOW_WIDTH, WINDOW_HEIGHT, CHANNEL, pixelsPng, WINDOW_WIDTH * CHANNEL);
-	delete[] pixelsPng;
-}
+//void convertToPng(SDL_Texture* tex, const char* fileName)
+//{
+//	std::vector<std::future<void>> futures;
+//	futures.reserve(WINDOW_HEIGHT);
+//
+//	uint8_t* pixelsTex;
+//	uint8_t* pixelsPng = new uint8_t[WINDOW_WIDTH * WINDOW_HEIGHT * CHANNEL];
+//	int pitchDiscarded;
+//
+//	SDL_LockTexture(tex, nullptr, (void**)(&pixelsTex), &pitchDiscarded);
+//
+//	int pixel = 0;
+//	for (int y = 0; y < WINDOW_HEIGHT; y++, pixel+= WINDOW_WIDTH)
+//	{
+//		auto convertToPngSub = [pixelsTex, pixelsPng](int pixel) {
+//
+//			for (int x = 0; x < WINDOW_WIDTH; x++, pixel++)
+//			{
+//				pixelsPng[pixel * CHANNEL + 0] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETR];
+//				pixelsPng[pixel * CHANNEL + 1] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETG];
+//				pixelsPng[pixel * CHANNEL + 2] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETB];
+//			}
+//		};
+//		futures.push_back(std::async(std::launch::async, convertToPngSub, pixel));
+//	}
+//
+//	stbi_write_png(fileName, WINDOW_WIDTH, WINDOW_HEIGHT, CHANNEL, pixelsPng, WINDOW_WIDTH * CHANNEL);
+//	delete[] pixelsPng;
+//}
 
 // Program ///////////////////////////////////////////////////////
 
 int main(int argc, char* argv[])
 {
- //   Iteration_t* iterations = new Iteration_t[WINDOW_WIDTH * WINDOW_HEIGHT];
-	//SDL_Texture* tex = SDL_CreateTexture(SDLManager::renderer(), SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
     SDL_Texture* screen = SDL_CreateTexture(SDLManager::renderer(), SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	//Position_t originX = DEFAULT_X;
-	//Position_t originY = DEFAULT_Y;
-	//Position_t pixelLength = DEFAULT_PIXEL_LENGTH;
-    Position_t originX = -1;
-    Position_t originY = 0.5;
-    Position_t pixelLength = 0.001;
+	//Number_t originX = DEFAULT_X;
+	//Number_t originY = DEFAULT_Y;
+	//Number_t pixelLength = DEFAULT_PIXEL_LENGTH;
+    Number_t originX = -1;
+    Number_t originY = 0.5;
+    Number_t pixelLength = 0.001;
 
     Map map(6, 6, pixelLength);
-    map.setRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
+    map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
     map.update(THRESHOLD);
     map.update(THRESHOLD);
     map.renderCopy(screen);
     SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
     map.debugCopy();
     SDL_RenderPresent(SDLManager::renderer());
-
- //   update(tex, iterations, originX, originY, pixelLength, THRESHOLD);
-	//SDL_RenderCopy(SDLManager::renderer(), tex, nullptr, nullptr);
-	//SDL_RenderPresent(SDLManager::renderer());
 
 	SDL_Event e;
 
@@ -189,7 +183,7 @@ int main(int argc, char* argv[])
 
 			if (mouseButtonDown == false)
 			{
-				Position_t oldPixelLength = pixelLength;
+				Number_t oldPixelLength = pixelLength;
 
                 if (e.wheel.y > 0)  // Up: zoom out
                 {
@@ -209,8 +203,8 @@ int main(int argc, char* argv[])
 				int mouseY;
 				SDL_GetMouseState(&mouseX, &mouseY);
 
-				originX -= static_cast<Position_t>(mouseX) * (pixelLength - oldPixelLength);
-				originY += static_cast<Position_t>(mouseY) * (pixelLength - oldPixelLength);
+				originX -= static_cast<Number_t>(mouseX) * (pixelLength - oldPixelLength);
+				originY += static_cast<Number_t>(mouseY) * (pixelLength - oldPixelLength);
 
 				shouldRender = true;
 			}
@@ -236,8 +230,8 @@ int main(int argc, char* argv[])
 			{
 				mouseButtonDown = false;
 
-				originX += static_cast<Position_t>(mouseStartX - e.button.x) * pixelLength;
-				originY += static_cast<Position_t>(e.button.y - mouseStartY) * pixelLength;
+				originX += static_cast<Number_t>(mouseStartX - e.button.x) * pixelLength;
+				originY += static_cast<Number_t>(e.button.y - mouseStartY) * pixelLength;
 
 				//RLOG(e.button.x << e.button.y << " up");
 
@@ -275,12 +269,7 @@ int main(int argc, char* argv[])
 
 		if ((SDL_GetTicks() - lastRenderTime > FRAMETIME) && shouldRender)
 		{
-   //         update(tex, iterations, originX, originY, pixelLength, THRESHOLD);
-			//SDL_RenderCopy(SDLManager::renderer(), tex, nullptr, nullptr);
-			//SDL_RenderPresent(SDLManager::renderer());
-
-
-            map.setRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
+            map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
             map.update(THRESHOLD);
             map.update(THRESHOLD);
             map.renderCopy(screen);
@@ -295,9 +284,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
- //   delete[] iterations;
-
-	//SDL_DestroyTexture(tex);
 	SDL_DestroyTexture(screen);
 
 	return 0;
