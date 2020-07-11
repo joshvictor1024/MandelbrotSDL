@@ -73,7 +73,8 @@ public:
 
     void setNumberRange(Number_t originX, Number_t originY, Number_t width, Number_t height);
     void update(Iteration_t threshold);
-    void renderCopy(SDL_Texture* screen);
+    //void renderCopy(SDL_Texture* screen);
+    void renderCopy(SDL_Texture* screen, Number_t pixelLength);
     void debugCopy()
     {
         SDL_Rect dst = { 0, 0, uSize * 20, vSize * 20 };
@@ -99,9 +100,9 @@ private:
                 y << ")");
             RLOG("Chunks: (" <<
                 u << ", " <<
-                v << ") through (" <<
+                v << ") inclusive through (" <<
                 u + uSize << ", " <<
-                v + vSize << ")");
+                v + vSize << ") exclusive");
         }
     };
 

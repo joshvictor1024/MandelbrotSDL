@@ -144,11 +144,11 @@ int main(int argc, char* argv[])
     Number_t originY = 0.5;
     Number_t pixelLength = 0.001;
 
-    Map map(6, 6, pixelLength);
+    Map map(10, 10, pixelLength);
     map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
     map.update(THRESHOLD);
     map.update(THRESHOLD);
-    map.renderCopy(screen);
+    map.renderCopy(screen, pixelLength);
     SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
     map.debugCopy();
     SDL_RenderPresent(SDLManager::renderer());
@@ -272,12 +272,17 @@ int main(int argc, char* argv[])
             map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
             map.update(THRESHOLD);
             map.update(THRESHOLD);
-            map.renderCopy(screen);
+            map.renderCopy(screen, pixelLength);
             SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
             map.debugCopy();
             SDL_RenderPresent(SDLManager::renderer());
 
-			RLOG(std::setprecision(10) << "origin: (" << originX << ", " << originY << ") screen width: " << pixelLength * WINDOW_WIDTH);
+			RLOG(std::setprecision(10) << "origin: (" <<
+                originX << ", " <<
+                originY << ") screen width: " <<
+                pixelLength * WINDOW_WIDTH << " (pixelLength: " <<
+                pixelLength << " )"
+            );
 
             lastRenderTime += FRAMETIME;
 			shouldRender = false;

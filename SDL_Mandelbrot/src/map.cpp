@@ -137,22 +137,24 @@ void Map::update(Iteration_t threshold)
 }
 
 // TODO: take pixelLength
-void Map::renderCopy(SDL_Texture* screen)
+void Map::renderCopy(SDL_Texture* screen, Number_t pixelLength)
 {
     Number_t x = textureRightBorder();
     Number_t y = textureBottomBorder();
     RLOG("Border: (" << x << ", " << y << ")");
 
-    SDL_SetRenderTarget(SDLManager::renderer(), screen);
+    Number_t texelPerPixel = texelLength / pixelLength;
 
     // Can go beyond border of texture
     SDL_Rect src = {
             (buffer.u * CHUNK_SIZE + (int)((range.x - buffer.x) / texelLength)) % (uSize * CHUNK_SIZE),
             (buffer.v * CHUNK_SIZE - (int)((range.y - buffer.y) / texelLength)) % (vSize * CHUNK_SIZE),
-            range.width / texelLength,
-            range.height / texelLength
+            range.width / pixelLength,
+            range.height / pixelLength
     };
-    RLOG(src.x << ", " << src.y << ", " << src.w << ", " << src.h);
+    RLOG("src: " << src.x << ", " << src.y << ", " << src.w << ", " << src.h);
+
+    SDL_SetRenderTarget(SDLManager::renderer(), screen);
 
     // Topleft of screen, bottomright on the texture
     SDL_Rect topleft = {
@@ -161,49 +163,60 @@ void Map::renderCopy(SDL_Texture* screen)
             uSize * CHUNK_SIZE - src.x,
             vSize * CHUNK_SIZE - src.y
     };
+    RLOG("topleft: " << topleft.x << ", " << topleft.y << ", " << topleft.w << ", " << topleft.h);
     {
-        SDL_FRect dst = { 0, 0, topleft.w, topleft.h };
+        SDL_FRect dst = { 0, 0, topleft.w * texelPerPixel, topleft.h * texelPerPixel };
+        RLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
         SDL_RenderCopyF(SDLManager::renderer(), texture, &topleft, &dst);
     }
 
     // Topright of screen, bottomleft on the texture
+    RLOG("if topleft.w ( " << topleft.w << " ) < range.width * texelLength ( " << range.width / texelLength << " )");
+    if (topleft.w < range.width / texelLength)
     {
         SDL_Rect topright = {
             0,
             src.y,
-            src.w - topleft.w,
+            range.width / texelLength - topleft.w,
             topleft.h
         };
-        SDL_FRect dst = { topleft.w, 0, topright.w, topright.h };
+        SDL_FRect dst = { topleft.w * texelPerPixel, 0, topright.w * texelPerPixel, topright.h * texelPerPixel };
+        RLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
         SDL_RenderCopyF(SDLManager::renderer(), texture, &topright, &dst);
     }
 
     // Bottomleft of screen, topright on the texture
+    RLOG("if topleft.h ( " << topleft.h << " ) < range.height * texelLength ( " << range.height / texelLength << " )");
+    if (topleft.h < range.height / texelLength)
     {
-        SDL_Rect bottomleft = {
-            src.x,
-            0,
-            topleft.w,
-            src.h - topleft.h
-        };
-        SDL_FRect dst = { 0, topleft.h, bottomleft.w, bottomleft.h };
+        {
+            SDL_Rect bottomleft = {
+                src.x,
+                0,
+                topleft.w,
+                range.height / texelLength - topleft.h
+            };
+            SDL_FRect dst = { 0, topleft.h * texelPerPixel, bottomleft.w * texelPerPixel, bottomleft.h * texelPerPixel };
+            RLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
-        SDL_RenderCopyF(SDLManager::renderer(), texture, &bottomleft, &dst);
-    }
+            SDL_RenderCopyF(SDLManager::renderer(), texture, &bottomleft, &dst);
+        }
 
-    // Bottomright of screen, topleft on the texture
-    {
-        SDL_Rect bottomright = {
-            0,
-            0,
-            src.w - topleft.w,
-            src.h - topleft.h
-        };
-        SDL_FRect dst = { topleft.w, topleft.h, bottomright.w, bottomright.h };
+        // Bottomright of screen, topleft on the texture
+        {
+            SDL_Rect bottomright = {
+                0,
+                0,
+                range.width / texelLength - topleft.w,
+                range.height / texelLength - topleft.h
+            };
+            SDL_FRect dst = { topleft.w * texelPerPixel, topleft.h * texelPerPixel, bottomright.w * texelPerPixel, bottomright.h * texelPerPixel };
+            RLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
-        SDL_RenderCopyF(SDLManager::renderer(), texture, &bottomright, &dst);
+            SDL_RenderCopyF(SDLManager::renderer(), texture, &bottomright, &dst);
+        }
     }
 
     SDL_SetRenderTarget(SDLManager::renderer(), nullptr);
