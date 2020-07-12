@@ -8,6 +8,7 @@
 typedef double Number_t;
 typedef uint16_t Iteration_t;
 typedef uint8_t PixelData_t;
+typedef int16_t Chunk_t;
 
 // Window ///////////////////////////////////////////////////////
 

@@ -55,7 +55,7 @@ void Chunk::compute(Number_t originX, Number_t originY, Number_t texelLength, It
     }
 }
 
-void Chunk::draw(SDL_Texture* texture, int chunkCoordX, int chunkCoordY, int mapWidth)
+void Chunk::draw(SDL_Texture* texture, Chunk_t chunkCoordX, Chunk_t chunkCoordY, Chunk_t mapWidth)
 {
     PixelData_t* pixelData;
     int pitchDiscarded;
@@ -65,6 +65,8 @@ void Chunk::draw(SDL_Texture* texture, int chunkCoordX, int chunkCoordY, int map
     // (chunkCoordY * mapWidth * CHUNK_SIZE * CHUNK_SIZE) + (chunkCoordX * CHUNK_SIZE)
     int pos = (chunkCoordY * mapWidth * CHUNK_SIZE + chunkCoordX) * CHUNK_SIZE;
 
+
+    // TODO: check that pixeldata index doesn't overflow
     for (int texelY = 0; texelY < CHUNK_SIZE; ++texelY, pos += mapWidth * CHUNK_SIZE)
     {
         for (int texelX = 0; texelX < CHUNK_SIZE; ++texelX)

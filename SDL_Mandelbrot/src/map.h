@@ -10,7 +10,7 @@ class Map
 {
 public:
 
-    Map(int uSize, int vSize, Number_t texelLength);
+    Map(Chunk_t uSize, Chunk_t vSize, Number_t texelLength);
     ~Map();
 
     void setNumberRange(Number_t originX, Number_t originY, Number_t width, Number_t height);
@@ -29,17 +29,17 @@ private:
     {
         Number_t x = 0;
         Number_t y = 0;
-        int u = 0;
-        int v = 0;
-        int uSize = 0;
-        int vSize = 0;
+        Chunk_t u = 0;
+        Chunk_t v = 0;
+        Chunk_t uSize = 0;
+        Chunk_t vSize = 0;
 
         void debugPrint()
         {
-            ILOG("Number (x, y): (" <<
+            DLOG("Number (x, y): (" <<
                 x << ", " <<
                 y << ")");
-            ILOG("Chunks: (" <<
+            DLOG("Chunks: (" <<
                 u << ", " <<
                 v << ") inclusive through (" <<
                 u + uSize << ", " <<
@@ -71,11 +71,14 @@ private:
     // Stateful, based on current buffer and most recent range
     void updateBuffer();
 
+    // To prevent chunk coord type (int) from overflowing    
+    void rebaseBuffer();
+
     SDL_Texture* texture = nullptr;
     std::vector<std::vector<Chunk>> chunks;
     std::vector<std::vector<Chunk::Status_t>> chunksStatus;
-    int uSize;  // In chunks
-    int vSize;  // In chunks
+    Chunk_t uSize;  // In chunks
+    Chunk_t vSize;  // In chunks
     
     Number_t texelLength;
     Number_t chunkLength;   // texelLength * CHUNK_SIZE is commonly used

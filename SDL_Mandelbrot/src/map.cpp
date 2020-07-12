@@ -44,7 +44,7 @@ constexpr T floorModulo(T dividend, T modulo);
 // Corrects modulo for negative numbers
 // Assume positive modulo
 template<>
-constexpr int floorModulo(int dividend, int modulo)
+constexpr Chunk_t floorModulo(Chunk_t dividend, Chunk_t modulo)
 {
     if (dividend >= 0)
     {
@@ -58,7 +58,7 @@ constexpr int floorModulo(int dividend, int modulo)
 
 // Class ///////////////////////////////////////////////////////
 
-Map::Map(int uSize, int vSize, Number_t texelLength) :
+Map::Map(Chunk_t uSize, Chunk_t vSize, Number_t texelLength) :
     uSize(uSize), vSize(vSize), texelLength(texelLength), chunkLength(texelLength* CHUNK_SIZE)
 {
     texture = SDL_CreateTexture(SDLManager::renderer(), SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, uSize * CHUNK_SIZE, vSize * CHUNK_SIZE);
@@ -91,7 +91,7 @@ Map::~Map()
 void Map::setNumberRange(Number_t originX, Number_t originY, Number_t width, Number_t height)
 {
     range = { originX, originY, width, height };
-    ILOG("Range: (" << originX << ", " << originY << ") through (" << originX + width << ", " << originY - height << ")");
+    DLOG("Range: (" << originX << ", " << originY << ") through (" << originX + width << ", " << originY - height << ")");
 
     updateBuffer();
 }
@@ -104,8 +104,9 @@ void Map::updateBuffer()
 
     BufferChunks newBuffer;
 
-    int chunkDu = floorDivide(range.x - buffer.x, chunkLength);
-    int chunkDv = floorDivide(buffer.y - range.y, chunkLength);
+    //TODO: rebase if out of bound
+    Chunk_t chunkDu = floorDivide(range.x - buffer.x, chunkLength);
+    Chunk_t chunkDv = floorDivide(buffer.y - range.y, chunkLength);
     //ILOG("Chunk Difference: (" <<
     //    chunkDu << ", " <<
     //    chunkDv << ")");
@@ -125,21 +126,21 @@ void Map::updateBuffer()
 
     // Check chunks in newBuffer, if they need to be re-computed
 
-    for (int v = newBuffer.v; v < newBuffer.v + newBuffer.vSize; ++v)
+    for (Chunk_t v = newBuffer.v; v < newBuffer.v + newBuffer.vSize; ++v)
     {
-        for (int u = newBuffer.u; u < newBuffer.u + newBuffer.uSize; ++u)
+        for (Chunk_t u = newBuffer.u; u < newBuffer.u + newBuffer.uSize; ++u)
         {
-            int uMod = floorModulo(u, uSize);
-            int vMod = floorModulo(v, vSize);
+            Chunk_t uMod = floorModulo(u, uSize);
+            Chunk_t vMod = floorModulo(v, vSize);
 
+            // If the chunks are out of the original bound
             //ILOG("Checking chunk: (" << u << ", " << v << ")");
-
             if (
                 ((u >= buffer.u && u < buffer.u + buffer.uSize) &&
                 (v >= buffer.v && v < buffer.v + buffer.vSize)) == false
                 )
             {
-                ILOG("Mark to be re-computed, chunk: (" << u << ", " << v << ") i.e. (" << uMod << ", " << vMod << ") after floorModulo");
+                DLOG("Mark to be re-computed, chunk: (" << u << ", " << v << ") i.e. (" << uMod << ", " << vMod << ") after floorModulo");
                 chunksStatus[vMod][uMod] |= Chunk::SHOULD_COMPUTE_BIT;
             }
         }
@@ -158,14 +159,25 @@ void Map::updateBuffer()
     buffer.debugPrint();
 }
 
+void Map::rebaseBuffer()
+{
+    BufferChunks newbuffer;
+
+    newbuffer.u = floorModulo(buffer.u, uSize);
+    newbuffer.v = floorModulo(buffer.v, vSize);
+    newbuffer.x = buffer.x + (newbuffer.u - buffer.u) * chunkLength;
+    newbuffer.y = buffer.y - (newbuffer.v - buffer.v) * chunkLength;
+}
+
 void Map::update(Iteration_t threshold)
 {
-    for (int v = buffer.v; v < buffer.v + buffer.vSize; ++v)
+    for (Chunk_t v = buffer.v; v < buffer.v + buffer.vSize; ++v)
     {
-        for (int u = buffer.u; u < buffer.u + buffer.uSize; ++u)
+        for (Chunk_t u = buffer.u; u < buffer.u + buffer.uSize; ++u)
         {
-            int uMod = u % uSize;
-            int vMod = v % vSize;
+            // floorModulo not needed: stays positive and within +1 modulo
+            Chunk_t uMod = u % uSize;
+            Chunk_t vMod = v % vSize;
             Chunk::Status_t& status = chunksStatus[vMod][uMod];
             Chunk& chunk = chunks[vMod][uMod];
 
@@ -198,18 +210,19 @@ void Map::renderCopy(SDL_Texture* screen, Number_t pixelLength)
 {
     Number_t x = textureRightBorder();
     Number_t y = textureBottomBorder();
-    ILOG("Border: (" << x << ", " << y << ")");
+    DLOG("Border: (" << x << ", " << y << ")");
 
     Number_t texelPerPixel = texelLength / pixelLength;
 
     // Can go beyond border of texture
+    // floorModulo not needed: stays positive and within +1 modulo
     SDL_Rect src = {
             (buffer.u * CHUNK_SIZE + (int)((range.x - buffer.x) / texelLength)) % (uSize * CHUNK_SIZE),
             (buffer.v * CHUNK_SIZE - (int)((range.y - buffer.y) / texelLength)) % (vSize * CHUNK_SIZE),
             range.width / pixelLength,
             range.height / pixelLength
     };
-    ILOG("src: " << src.x << ", " << src.y << ", " << src.w << ", " << src.h);
+    DLOG("src: " << src.x << ", " << src.y << ", " << src.w << ", " << src.h);
 
     SDL_SetRenderTarget(SDLManager::renderer(), screen);
 
@@ -220,16 +233,16 @@ void Map::renderCopy(SDL_Texture* screen, Number_t pixelLength)
             uSize * CHUNK_SIZE - src.x,
             vSize * CHUNK_SIZE - src.y
     };
-    ILOG("topleft: " << topleft.x << ", " << topleft.y << ", " << topleft.w << ", " << topleft.h);
+    DLOG("topleft: " << topleft.x << ", " << topleft.y << ", " << topleft.w << ", " << topleft.h);
     {
         SDL_FRect dst = { 0, 0, topleft.w * texelPerPixel, topleft.h * texelPerPixel };
-        ILOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
+        DLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
         SDL_RenderCopyF(SDLManager::renderer(), texture, &topleft, &dst);
     }
 
     // Topright of screen, bottomleft on the texture
-    ILOG("if topleft.w ( " << topleft.w << " ) < range.width * texelLength ( " << range.width / texelLength << " )");
+    DLOG("if topleft.w ( " << topleft.w << " ) < range.width * texelLength ( " << range.width / texelLength << " )");
     if (topleft.w < range.width / texelLength)
     {
         SDL_Rect topright = {
@@ -239,13 +252,13 @@ void Map::renderCopy(SDL_Texture* screen, Number_t pixelLength)
             topleft.h
         };
         SDL_FRect dst = { topleft.w * texelPerPixel, 0, topright.w * texelPerPixel, topright.h * texelPerPixel };
-        ILOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
+        DLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
         SDL_RenderCopyF(SDLManager::renderer(), texture, &topright, &dst);
     }
 
     // Bottomleft of screen, topright on the texture
-    ILOG("if topleft.h ( " << topleft.h << " ) < range.height * texelLength ( " << range.height / texelLength << " )");
+    DLOG("if topleft.h ( " << topleft.h << " ) < range.height * texelLength ( " << range.height / texelLength << " )");
     if (topleft.h < range.height / texelLength)
     {
         {
@@ -256,7 +269,7 @@ void Map::renderCopy(SDL_Texture* screen, Number_t pixelLength)
                 range.height / texelLength - topleft.h
             };
             SDL_FRect dst = { 0, topleft.h * texelPerPixel, bottomleft.w * texelPerPixel, bottomleft.h * texelPerPixel };
-            ILOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
+            DLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
             SDL_RenderCopyF(SDLManager::renderer(), texture, &bottomleft, &dst);
         }
@@ -270,7 +283,7 @@ void Map::renderCopy(SDL_Texture* screen, Number_t pixelLength)
                 range.height / texelLength - topleft.h
             };
             SDL_FRect dst = { topleft.w * texelPerPixel, topleft.h * texelPerPixel, bottomright.w * texelPerPixel, bottomright.h * texelPerPixel };
-            ILOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
+            DLOG("dst: " << dst.x << ", " << dst.y << ", " << dst.w << ", " << dst.h);
 
             SDL_RenderCopyF(SDLManager::renderer(), texture, &bottomright, &dst);
         }
