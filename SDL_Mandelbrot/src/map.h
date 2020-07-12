@@ -6,64 +6,6 @@
 #include "sdl_manager.h"
 #include "chunk.h"
 
-// Utility ///////////////////////////////////////////////////////
-
-template<typename T>
-constexpr int floorDivide(T dividend, T modulo);
-
-// Integer divide and truncate towards negative infinity
-// Corrects integer division for negative numbers
-// Assume positive divisor
-template<>
-constexpr int floorDivide(Number_t dividend, Number_t divisor)
-{
-    if (dividend >= 0)
-    {
-        return (int)(dividend / divisor);
-    }
-    else
-    {
-        return (int)(dividend / divisor) - 1;
-    }
-}
-
-// Integer divide and truncate towards negative infinity
-// Corrects integer division for negative numbers
-// Assume positive divisor
-template<>
-constexpr int floorDivide(int dividend, int divisor)
-{
-    if (dividend >= 0)
-    {
-        return dividend / divisor;
-    }
-    else
-    {
-        return dividend / divisor - 1;
-    }
-}
-
-template<typename T>
-constexpr T floorModulo(T dividend, T modulo);
-
-// Does modulo and take the positive remainder
-// Corrects modulo for negative numbers
-// Assume positive modulo
-template<>
-constexpr int floorModulo(int dividend, int modulo)
-{
-    if (dividend >= 0)
-    {
-        return dividend % modulo;
-    }
-    else
-    {
-        return dividend % modulo + modulo;
-    }
-}
-
-// Class ///////////////////////////////////////////////////////
-
 class Map
 {
 public:
@@ -73,7 +15,6 @@ public:
 
     void setNumberRange(Number_t originX, Number_t originY, Number_t width, Number_t height);
     void update(Iteration_t threshold);
-    //void renderCopy(SDL_Texture* screen);
     void renderCopy(SDL_Texture* screen, Number_t pixelLength);
     void debugCopy()
     {
@@ -95,10 +36,10 @@ private:
 
         void debugPrint()
         {
-            RLOG("Number (x, y): (" <<
+            ILOG("Number (x, y): (" <<
                 x << ", " <<
                 y << ")");
-            RLOG("Chunks: (" <<
+            ILOG("Chunks: (" <<
                 u << ", " <<
                 v << ") inclusive through (" <<
                 u + uSize << ", " <<
@@ -137,7 +78,7 @@ private:
     int vSize;  // In chunks
     
     Number_t texelLength;
-    Number_t chunkLength;   // texelLength * CHUNK_SIZE
+    Number_t chunkLength;   // texelLength * CHUNK_SIZE is commonly used
     BufferChunks buffer;
     NumberRange range;
 };

@@ -1,5 +1,19 @@
 #include "chunk.h"
 
+typedef std::complex<Number_t> Complex_t;//TODO: not necessary?
+
+constexpr Number_t absSquared(const Complex_t& c)
+{
+    return (c.real() * c.real() + c.imag() + c.imag());
+}
+
+inline void color(uint8_t* pixels, int pos, int it)
+{
+    pixels[pos + RGB888_OFFSETR] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 0];
+    pixels[pos + RGB888_OFFSETG] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 1];
+    pixels[pos + RGB888_OFFSETB] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 2];
+}
+
 Chunk::Chunk()
 {
     iterations.resize(CHUNK_SIZE * CHUNK_SIZE);

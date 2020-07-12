@@ -7,11 +7,6 @@
 
 constexpr int CHUNK_SIZE = 256;
 
-//constexpr Number_t absSquared(const Complex_t& c) // TODO: proper location
-//{
-//    return (c.real() * c.real() + c.imag() + c.imag());
-//}
-
 class Chunk
 {
 public:

@@ -6,13 +6,13 @@ SDLManager SDLManager::instance;
 SDLManager::SDLManager()
 {
     bool success = true;
-    DLOG("SDL_Init!");
+    ILOG("SDL_Init!");
 
     // Initialize SDL
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        DLOG("SDL could not initialize! SDL Error: " << SDL_GetError());
+        ILOG("SDL could not initialize! SDL Error: " << SDL_GetError());
         success = false;
     }
 
@@ -30,7 +30,7 @@ SDLManager::SDLManager()
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     if (mWindow == nullptr)
     {
-        DLOG("Window could not be created! SDL Error: " << SDL_GetError());
+        ILOG("Window could not be created! SDL Error: " << SDL_GetError());
         success = false;
     }
 
@@ -42,7 +42,7 @@ SDLManager::SDLManager()
     //window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
     if (mRenderer == nullptr)
     {
-        DLOG("Renderer could not be created! SDL Error: " << SDL_GetError());
+        ILOG("Renderer could not be created! SDL Error: " << SDL_GetError());
         success = false;
     }
     SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
@@ -57,5 +57,5 @@ SDLManager::SDLManager()
 SDLManager::~SDLManager()
 {
     SDL_Quit();
-    DLOG("SDL_Quit!");
+    ILOG("SDL_Quit!");
 }

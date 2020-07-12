@@ -6,15 +6,8 @@
 // Types ///////////////////////////////////////////////////////
 
 typedef double Number_t;
-typedef std::complex<Number_t> Complex_t;
 typedef uint16_t Iteration_t;
 typedef uint8_t PixelData_t;
-
-constexpr Number_t absSquared(const Complex_t& c) // TODO: proper location
-{
-    return (c.real() * c.real() + c.imag() + c.imag());
-}
-
 
 // Window ///////////////////////////////////////////////////////
 
@@ -32,9 +25,11 @@ constexpr Number_t DEFAULT_PIXEL_LENGTH = 0.003;
 
 constexpr float SCROLL_ZOOM_IN = 1.0f / 0.8f;
 
+constexpr float MAX_PIXEL_LENGTH = 0.01f;
+
 // Color Data ///////////////////////////////////////////////////////
 
-constexpr float MAX_PIXEL_LENGTH = 0.01f;
+//TODO: move to chunk
 
 constexpr int CHANNEL = 3;
 constexpr int RGB888_SIZE = 4;
@@ -93,13 +88,6 @@ constexpr uint8_t COLOR_UNBOUNDED[COLOR_PALETTE_STRIDE * ((THRESHOLD + INTERVAL 
 constexpr int RGB888_OFFSETR = 2;
 constexpr int RGB888_OFFSETG = 1;
 constexpr int RGB888_OFFSETB = 0;
-
-inline void color(uint8_t* pixels, int pos, int it)
-{
-	pixels[pos + RGB888_OFFSETR] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 0];
-	pixels[pos + RGB888_OFFSETG] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 1];
-	pixels[pos + RGB888_OFFSETB] = COLOR_UNBOUNDED[(it / INTERVAL) * COLOR_PALETTE_STRIDE + 2];
-}
 
 //#include "boost\multiprecision\cpp_bin_float.hpp"
 //#include "boost\multiprecision\cpp_complex.hpp"
