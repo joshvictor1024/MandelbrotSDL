@@ -100,6 +100,7 @@
 //    updateTexture(tex, iterations);
 //}
 
+//constexpr int CHANNEL = 3;
 // TODO: check if it still works
 //void convertToPng(SDL_Texture* tex, const char* fileName)
 //{
@@ -119,9 +120,9 @@
 //
 //			for (int x = 0; x < WINDOW_WIDTH; x++, pixel++)
 //			{
-//				pixelsPng[pixel * CHANNEL + 0] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETR];
-//				pixelsPng[pixel * CHANNEL + 1] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETG];
-//				pixelsPng[pixel * CHANNEL + 2] = pixelsTex[pixel * RGB888_SIZE + RGB888_OFFSETB];
+//				pixelsPng[pixel * CHANNEL + 0] = pixelsTex[pixel * TEXTURE_PITCH + PIXELDATA_OFFSETR];
+//				pixelsPng[pixel * CHANNEL + 1] = pixelsTex[pixel * TEXTURE_PITCH + PIXELDATA_OFFSETG];
+//				pixelsPng[pixel * CHANNEL + 2] = pixelsTex[pixel * TEXTURE_PITCH + PIXELDATA_OFFSETB];
 //			}
 //		};
 //		futures.push_back(std::async(std::launch::async, convertToPngSub, pixel));
@@ -140,14 +141,17 @@ int main(int argc, char* argv[])
 	//Number_t originX = DEFAULT_X;
 	//Number_t originY = DEFAULT_Y;
 	//Number_t pixelLength = DEFAULT_PIXEL_LENGTH;
-    Number_t originX = -1;
+    Number_t originX = -1.0;
     Number_t originY = 0.5;
-    Number_t pixelLength = 0.001;
+    Number_t pixelLength = 0.0005;
+
+    //Iteration_t threshold = DEFAULT_THRESHOLD;
+    Iteration_t threshold = 512;
 
     Map map(10, 10, pixelLength);
     map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
-    map.update(THRESHOLD);
-    map.update(THRESHOLD);
+    map.update(threshold);
+    map.update(threshold);
     map.renderCopy(screen, pixelLength);
     SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
     map.debugCopy();
@@ -270,8 +274,8 @@ int main(int argc, char* argv[])
 		if ((SDL_GetTicks() - lastRenderTime > FRAMETIME) && shouldRender)
 		{
             map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
-            map.update(THRESHOLD);
-            map.update(THRESHOLD);
+            map.update(threshold);
+            map.update(threshold);
             map.renderCopy(screen, pixelLength);
             SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
             map.debugCopy();

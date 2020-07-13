@@ -52,7 +52,7 @@ constexpr Chunk_t floorModulo(Chunk_t dividend, Chunk_t modulo)
     }
     else
     {
-        return dividend % modulo + modulo;
+        return (dividend + 1) % modulo + modulo - 1;
     }
 }
 
@@ -200,7 +200,7 @@ void Map::update(Iteration_t threshold)
             {
                 status = Chunk::START_DRAW;
 
-                chunk.draw(texture, uMod, vMod, uSize);
+                chunk.draw(texture, uMod, vMod, uSize, threshold);
             }
         }
     }

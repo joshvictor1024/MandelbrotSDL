@@ -15,7 +15,7 @@ public:
     ~Chunk();
 
     void compute(Number_t originX, Number_t originY, Number_t texelLength, Iteration_t threshold);
-    void draw(SDL_Texture* texture, Chunk_t chunkCoordX, Chunk_t ChunkCoordY, Chunk_t mapWidth);
+    void draw(SDL_Texture* texture, Chunk_t chunkCoordX, Chunk_t ChunkCoordY, Chunk_t mapWidth, Iteration_t threshold);
 
     typedef uint8_t Status_t;
     static constexpr Status_t SHOULD_COMPUTE_BIT    = 0x1;
