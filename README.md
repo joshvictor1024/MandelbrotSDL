@@ -6,13 +6,14 @@ A mandelbrot set fractal explorer using SDL2.0 for rendering
 
 - Drag with mouse to move
 - Scroll to zoom, centered at mouse position
+- Set `Graphics` parameters in 'constants.h' to set initial view
+- Chunk based rendering
 
 ### TODO
 
 - Multithread
 - Intrinsics (inspired by olc, the OneLoneCoder Youtube channel)
 - Higher resolution than 64-bit float
-- Chunk based rendering
 - Variable iteration depth
   - Growing color range
 - Variable resolution
@@ -20,25 +21,8 @@ A mandelbrot set fractal explorer using SDL2.0 for rendering
   - Style decision
   - Organize into classes
 
-## DevLog
+## Release Notes
 
-### 2020-07-06
-
-- Now recognizes and skip computing already computed chunks
-- Code style clean-up
-
-### 2020-07-04
-
-- First chunk based rendering
-  - Single map
-  - Not reusing already calculated data yet
-
-### 2020-07-02
-
-- Separate computing iterations from drawing
-- SDL wrapped into manager class
-- Origin is now topleft, rather than center
-
-### 2020-06-30
+### v0.1.0
 
 - First publish

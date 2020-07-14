@@ -11,3 +11,5 @@ SDL_Mandelbrot/src/vendor/glm-0.9.9.6/util/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+devlog.md

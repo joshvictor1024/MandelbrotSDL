@@ -10,7 +10,7 @@
 #define LOG_LEVEL_DEBUG     0x4
 
 // Set log level here
-#define LOG_LEVEL LOG_LEVEL_DEBUG
+#define LOG_LEVEL LOG_LEVEL_RELEASE
 
 #if LOG_LEVEL == LOG_LEVEL_NONE
 

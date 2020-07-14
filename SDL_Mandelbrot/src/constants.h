@@ -27,7 +27,7 @@ constexpr Iteration_t DEFAULT_THRESHOLD = 256;
 
 constexpr float SCROLL_ZOOM_IN = 1.0f / 0.8f;
 
-constexpr float MAX_PIXEL_LENGTH = 0.01f;
+constexpr float MAX_PIXEL_LENGTH = 0.005f;
 
 // Texture ///////////////////////////////////////////////////////
 

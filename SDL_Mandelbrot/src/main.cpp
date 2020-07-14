@@ -138,15 +138,14 @@ int main(int argc, char* argv[])
 {
     SDL_Texture* screen = SDL_CreateTexture(SDLManager::renderer(), SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	//Number_t originX = DEFAULT_X;
-	//Number_t originY = DEFAULT_Y;
-	//Number_t pixelLength = DEFAULT_PIXEL_LENGTH;
-    Number_t originX = -1.0;
-    Number_t originY = 0.5;
-    Number_t pixelLength = 0.0005;
+    //Number_t originX = -1.0;
+    //Number_t originY = 0.5;
+    //Number_t pixelLength = 0.0005;
 
-    //Iteration_t threshold = DEFAULT_THRESHOLD;
-    Iteration_t threshold = 512;
+	Number_t originX = DEFAULT_X;
+	Number_t originY = DEFAULT_Y;
+	Number_t pixelLength = DEFAULT_PIXEL_LENGTH;
+    Iteration_t threshold = DEFAULT_THRESHOLD;
 
     Map map(10, 10, pixelLength);
     map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
@@ -154,7 +153,7 @@ int main(int argc, char* argv[])
     map.update(threshold);
     map.renderCopy(screen, pixelLength);
     SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
-    map.debugCopy();
+    //map.debugCopy();
     SDL_RenderPresent(SDLManager::renderer());
 
 	SDL_Event e;
@@ -278,7 +277,7 @@ int main(int argc, char* argv[])
             map.update(threshold);
             map.renderCopy(screen, pixelLength);
             SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
-            map.debugCopy();
+            //map.debugCopy();
             SDL_RenderPresent(SDLManager::renderer());
 
 			RLOG(std::setprecision(10) << "origin: (" <<
