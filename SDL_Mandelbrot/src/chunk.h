@@ -1,34 +1,32 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#include <vector>
+#include <array>
 #include "constants.h"
 #include "sdl_manager.h"
 
-constexpr int CHUNK_SIZE = 256;
-
+// Wrapper around POD std::array, plus member functions
 class Chunk
 {
 public:
 
-    Chunk();
-    ~Chunk();
+    // Non-locking
+    // Works with external lock or lock-free queue
+    void Compute(Number_t originX, Number_t originY, Number_t texelLength, Iteration_t threshold);
 
-    void compute(Number_t originX, Number_t originY, Number_t texelLength, Iteration_t threshold);
-    void draw(SDL_Texture* texture, Chunk_t chunkCoordX, Chunk_t ChunkCoordY, Chunk_t mapWidth, Iteration_t threshold);
+    // Locking
+    void Draw(SDL_Texture* texture, Chunk_t chunkUMod, Chunk_t ChunkVMod, Chunk_t mapUSize, Iteration_t threshold);
+
+    constexpr static int SIZE = 256;    // in texels
 
     typedef uint8_t Status_t;
-    static constexpr Status_t SHOULD_COMPUTE_BIT    = 0x1;
-    static constexpr Status_t SHOULD_DRAW_BIT       = 0x2;
-
-    static constexpr Status_t INIT                  = 0x0;
-    static constexpr Status_t START_COMPUTE         = 0x0;
-    static constexpr Status_t END_COMPUTE           = SHOULD_DRAW_BIT;
-    static constexpr Status_t START_DRAW            = 0x0;
+    constexpr static Status_t SHOULD_COMPUTE_BIT = 0x1;
+    constexpr static Status_t SHOULD_DRAW_BIT = 0x2;
+    constexpr static Status_t INIT = SHOULD_COMPUTE_BIT;
 
 private:
 
-    std::vector<Iteration_t> iterations;
+    std::array<Iteration_t, SIZE * SIZE> iterations;
 };
 
 #endif // !CHUNK_H

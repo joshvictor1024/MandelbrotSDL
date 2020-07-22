@@ -2,36 +2,26 @@
 
 typedef std::complex<Number_t> Complex_t;//TODO: not necessary?
 
-Chunk::Chunk()
-{
-    iterations.resize(CHUNK_SIZE * CHUNK_SIZE);
-}
-
-Chunk::~Chunk()
-{
-
-}
-
 // Compute ///////////////////////////////////////////////////////
 
-constexpr Number_t absSquared(const Complex_t& c)
+constexpr Number_t absSquared(const Complex_t& c) noexcept
 {
     return (c.real() * c.real() + c.imag() * c.imag());
 }
 
-void Chunk::compute(Number_t originX, Number_t originY, Number_t texelLength, Iteration_t threshold)
+void Chunk::Compute(Number_t originX, Number_t originY, Number_t texelLength, Iteration_t threshold)
 {
-    int pos = 0;
+    int index = 0;
 
-    for (int texelY = 0; texelY < CHUNK_SIZE; ++texelY)
+    for (int texelV = 0; texelV < SIZE; ++texelV)
     {
-        for (int texelX = 0; texelX < CHUNK_SIZE; ++texelX, ++pos)
+        for (int texelU = 0; texelU < SIZE; ++texelU, ++index)
         {
             Complex_t c = { 0.0, 0.0 };
             Complex_t dc =
             {
-                originX + texelX * texelLength,
-                originY - texelY * texelLength
+                originX + texelU * texelLength,
+                originY - texelV * texelLength
             };
 
             Iteration_t it = 0;
@@ -45,7 +35,7 @@ void Chunk::compute(Number_t originX, Number_t originY, Number_t texelLength, It
                 }
             }
 
-            iterations[pos] = it;
+            iterations[index] = it;
         }
     }
 }
@@ -65,6 +55,7 @@ constexpr int PALETTE_SIZE = 16;
 constexpr int INTERVAL = 16;
 constexpr int COLOR_COUNT = INTERVAL * PALETTE_SIZE;
 
+// Set draw color here
 constexpr Color BOUNDED_COLOR = { 0.0f, 0.0f, 0.0f };
 constexpr Color UNBOUNDED_COLORS[PALETTE_SIZE + 1] =
 {
@@ -104,40 +95,39 @@ constexpr Color getInterpolated(int iterationsMod)
     };
 }
 
-inline void color(uint8_t* pixels, int pos, Iteration_t it, Iteration_t threshold)
+inline void color(uint8_t* pixels, int index, Iteration_t it, Iteration_t threshold)
 {
     if (it == threshold)
     {
-        pixels[pos + PIXELDATA_OFFSETR] = BOUNDED_COLOR.r * 0xff;
-        pixels[pos + PIXELDATA_OFFSETG] = BOUNDED_COLOR.g * 0xff;
-        pixels[pos + PIXELDATA_OFFSETB] = BOUNDED_COLOR.b * 0xff;
+        pixels[index + PIXELDATA_OFFSETR] = BOUNDED_COLOR.r * 0xff;
+        pixels[index + PIXELDATA_OFFSETG] = BOUNDED_COLOR.g * 0xff;
+        pixels[index + PIXELDATA_OFFSETB] = BOUNDED_COLOR.b * 0xff;
     }
     else
     {
         Color color = getInterpolated(it % COLOR_COUNT);
 
-        pixels[pos + PIXELDATA_OFFSETR] = color.r * 0xff;
-        pixels[pos + PIXELDATA_OFFSETG] = color.g * 0xff;
-        pixels[pos + PIXELDATA_OFFSETB] = color.b * 0xff;
+        pixels[index + PIXELDATA_OFFSETR] = color.r * 0xff;
+        pixels[index + PIXELDATA_OFFSETG] = color.g * 0xff;
+        pixels[index + PIXELDATA_OFFSETB] = color.b * 0xff;
     }
 }
 
-void Chunk::draw(SDL_Texture* texture, Chunk_t chunkCoordX, Chunk_t chunkCoordY, Chunk_t mapWidth, Iteration_t threshold)
+void Chunk::Draw(SDL_Texture* texture, Chunk_t chunkUMod, Chunk_t chunkVMod, Chunk_t mapUSize, Iteration_t threshold)
 {
     PixelData_t* pixelData;
     int pitchDiscarded;
 
     SDL_LockTexture(texture, nullptr, (void**)(&pixelData), &pitchDiscarded);
 
-    // (chunkCoordY * mapWidth * CHUNK_SIZE * CHUNK_SIZE) + (chunkCoordX * CHUNK_SIZE)
-    int pos = (chunkCoordY * mapWidth * CHUNK_SIZE + chunkCoordX) * CHUNK_SIZE;
+    // (chunkVMod * mapUSize * (SIZE * SIZE)) + (chunkUMod * SIZE)
+    PixelDataIndex_t index = (chunkVMod * mapUSize * SIZE + chunkUMod) * SIZE;
 
-    // TODO: check that pixeldata index doesn't overflow
-    for (int texelY = 0; texelY < CHUNK_SIZE; ++texelY, pos += mapWidth * CHUNK_SIZE)
+    for (PixelDataIndex_t texelV = 0; texelV < SIZE; ++texelV, index += mapUSize * SIZE)
     {
-        for (int texelX = 0; texelX < CHUNK_SIZE; ++texelX)
+        for (PixelDataIndex_t texelU = 0; texelU < SIZE; ++texelU)
         {
-            color(pixelData, (pos + texelX) * TEXTURE_PITCH, iterations[texelY * CHUNK_SIZE + texelX], threshold);
+            color(pixelData, (index + texelU) * TEXTURE_PITCH, iterations[texelV * SIZE + texelU], threshold);
         }
     }
 

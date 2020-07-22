@@ -7,98 +7,7 @@
 
 #include "constants.h"
 #include "sdl_manager.h"
-#include "map.h"
-
-// Utility ///////////////////////////////////////////////////////
-
-//constexpr Number_t absSquared(const Complex_t& c)
-//{
-//	return (c.real() * c.real() + c.imag() + c.imag());
-//}
-
-// Computation ///////////////////////////////////////////////////////
-
-//void compute(
-//    Iteration_t* iterations,
-//    std::vector<std::future<void>>& futures,
-//	const Number_t originX,
-//	const Number_t originY,
-//	const Number_t texelLength,
-//	const Iteration_t threshold
-//)
-//{
-//	int pos = 0;
-//
-//    // Pixel data starts from top left
-//    // Dividing window into 1-pixel-high rows for async computation
-//
-//	for (int texelY = 0; texelY > -1 * WINDOW_HEIGHT; --texelY, pos += WINDOW_WIDTH)
-//	{
-//		auto computeRow = [iterations, originX, originY, texelLength, threshold, texelY](int pos) {
-//
-//			for (int texelX = 0; texelX < WINDOW_WIDTH; ++texelX, ++pos)
-//			{
-//				Complex_t c = { 0.0, 0.0 };
-//				Complex_t dc =
-//                {
-//					texelX * texelLength + originX,
-//					texelY * texelLength + originY
-//				};
-//
-//                Iteration_t it = 0;
-//				for (; it < threshold; ++it)
-//				{
-//					c = c * c + dc;
-//
-//					if (absSquared(c) > static_cast<Number_t>(2 * 2))
-//					{
-//						break;
-//					}
-//				}
-//                iterations[pos] = it;
-//			}
-//		};
-//
-//		futures.push_back(std::async(std::launch::async, computeRow, pos));
-//	}
-//}
-
-// Graphics ///////////////////////////////////////////////////////
-
-//void updateTexture(SDL_Texture* tex, Iteration_t* iterations)
-//{
-//    uint8_t* pixelsTex;
-//    int pitchDiscarded;
-//
-//    SDL_LockTexture(tex, nullptr, (void**)(&pixelsTex), &pitchDiscarded);    
-//    for (int pos = 0; pos < WINDOW_WIDTH * WINDOW_HEIGHT; ++pos)
-//    {
-//        color(pixelsTex, pos * RGB888_SIZE, iterations[pos]);
-//    }
-//    SDL_UnlockTexture(tex);
-//}
-//
-//void update(
-//    SDL_Texture* tex,
-//    Iteration_t* iterations,
-//	const Number_t originX,
-//	const Number_t originY,
-//	const Number_t pixelLength,
-//	const int threshold
-//)
-//{
-//    std::vector<std::future<void>> futures;
-//    futures.reserve(WINDOW_HEIGHT);
-//
-//    compute(iterations, futures, originX, originY, pixelLength, threshold);
-//
-//    for (auto& i : futures)
-//    {
-//        i.get();
-//    }
-//
-//    updateTexture(tex, iterations);
-//}
+#include "scene.h"
 
 //constexpr int CHANNEL = 3;
 // TODO: check if it still works
@@ -140,39 +49,42 @@ int main(int argc, char* argv[])
 
     //Number_t originX = -1.0;
     //Number_t originY = 0.5;
-    //Number_t pixelLength = 0.0005;
+    //Number_t pixelLength = 0.0001;
 
 	Number_t originX = DEFAULT_X;
-	Number_t originY = DEFAULT_Y;
-	Number_t pixelLength = DEFAULT_PIXEL_LENGTH;
+    Number_t originY = DEFAULT_Y;
+    Number_t pixelLength = DEFAULT_PIXEL_LENGTH;
     Iteration_t threshold = DEFAULT_THRESHOLD;
 
-    Map map(10, 10, pixelLength);
-    map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
-    map.update(threshold);
-    map.update(threshold);
-    map.renderCopy(screen, pixelLength);
-    SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
-    //map.debugCopy();
-    SDL_RenderPresent(SDLManager::renderer());
-
-	SDL_Event e;
-
-	uint32_t lastRenderTime = SDL_GetTicks();
+    Scene scene({ 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT }, pixelLength);
+    scene.SetNumberRange(originX, originY, pixelLength);
 
     // Controls
 
-	int mouseStartX = 0;
-	int mouseStartY = 0;
+	int mouseX = 0;
+	int mouseY = 0;
+    int mouseDownX = 0;
+    int mouseDownY = 0;
 	bool mouseButtonDown = false;
+    bool keyUp = false;
+    bool keyDown = false;
+    bool keyLeft = false;
+    bool keyRight = false;
+    bool keyZoomIn = false;
+    bool keyZoomOut = false;
 
     // Program
 
+    SDL_Event e;
+    uint32_t lastFrameTick = SDL_GetTicks();
+    uint32_t lastFrameTime = 0;
 	bool shouldRender = false;
 	bool run = true;
 
-	while (SDL_WaitEvent(&e) && run)
+    while (run)
 	{
+        SDL_WaitEventTimeout(&e, MIN_FRAMETIME);
+
         // Event
 
 		switch (e.type)
@@ -182,73 +94,70 @@ int main(int argc, char* argv[])
 			run = false;
             break;
 
-		case SDL_MOUSEWHEEL:
+        // TODO: revive mousewheel (with sdl)
+		//case SDL_MOUSEWHEEL:
 
-			if (mouseButtonDown == false)
-			{
-				Number_t oldPixelLength = pixelLength;
+		//	if (mouseButtonDown == false && shouldRender == false)
+		//	{
+		//		Number_t oldPixelLength = pixelLength;
 
-                if (e.wheel.y > 0)  // Up: zoom out
-                {
-                    pixelLength *= 1.0 / SCROLL_ZOOM_IN;
-                }
-                else
-                {
-                    pixelLength *= 1.0 * SCROLL_ZOOM_IN;
-                }
+  //              int x;
+  //              int y;
+  //              SDL_GetMouseState(&x, &y);
 
-                if (pixelLength >= MAX_PIXEL_LENGTH)
-                {
-                    pixelLength = oldPixelLength;
-                }
+  //              if (e.wheel.y > 0 && mouseWheelDirectionDown)  // Up: zoom out, pixelLength increases
+  //              {
+  //                  mouseWheelDirectionDown = false;
+  //                  scene.Zoom(x, y, SCROLL_ZOOM_OUT);
+  //              }
+  //              else if (e.wheel.y < 0 && mouseWheelDirectionDown == false)
+  //              {
+  //                  mouseWheelDirectionDown = true;
+  //                  scene.Zoom(x, y, 1.0 / SCROLL_ZOOM_OUT);
+  //              }
 
-				int mouseX;
-				int mouseY;
-				SDL_GetMouseState(&mouseX, &mouseY);
+		//		shouldRender = true;
+		//	}
 
-				originX -= static_cast<Number_t>(mouseX) * (pixelLength - oldPixelLength);
-				originY += static_cast<Number_t>(mouseY) * (pixelLength - oldPixelLength);
-
-				shouldRender = true;
-			}
-
-			break;
+		//	break;
 
 		case SDL_MOUSEBUTTONDOWN:
 
-			if (e.button.button & SDL_BUTTON_LEFT)
+            mouseX = e.button.x;
+            mouseY = e.button.y;
+			if (e.button.button & SDL_BUTTON_LEFT && mouseButtonDown == false)
 			{
 				mouseButtonDown = true;
 
-				mouseStartX = e.button.x;
-				mouseStartY = e.button.y;
-				//RLOG(mouseStartX << mouseStartY << " down");
+                mouseX = e.button.x;
+                mouseY = e.button.y;
+				mouseDownX = e.button.x;
+				mouseDownY = e.button.y;
+				//RLOG("down");
 			}
 
 			break;
 
 		case SDL_MOUSEBUTTONUP:
 
-			if (e.button.button & SDL_BUTTON_LEFT)
+            mouseX = e.button.x;
+            mouseY = e.button.y;
+			if (e.button.button & SDL_BUTTON_LEFT && mouseButtonDown)
 			{
 				mouseButtonDown = false;
 
-				originX += static_cast<Number_t>(mouseStartX - e.button.x) * pixelLength;
-				originY += static_cast<Number_t>(e.button.y - mouseStartY) * pixelLength;
-
-				//RLOG(e.button.x << e.button.y << " up");
+                scene.Movement(mouseDownX - mouseX, mouseDownY - mouseY);
+                //RLOG("up");
 
 				shouldRender = true;
 			}
 
 			break;
 
-		//case SDL_MOUSEMOTION:
-		//	if (mouseButtonDown)
-		//	{
-		//		//mouseMoved = true;
-		//	}
-		//	break;
+		case SDL_MOUSEMOTION:
+            mouseX = e.button.x;
+            mouseY = e.button.y;
+            break;
 
 		case SDL_KEYDOWN:
 
@@ -260,34 +169,59 @@ int main(int argc, char* argv[])
 			//	convertToPng(tex, ss.str().c_str());
 			//}
 
-            if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+            switch (e.key.keysym.scancode)
             {
-                run = false;
+            case SDL_SCANCODE_ESCAPE: run = false; break;
+            case SDL_SCANCODE_UP: keyUp = true; break;
+            case SDL_SCANCODE_DOWN: keyDown = true; break;
+            case SDL_SCANCODE_LEFT: keyLeft = true; break;
+            case SDL_SCANCODE_RIGHT: keyRight = true; break;
+            case SDL_SCANCODE_Z: keyZoomOut = true; break;
+            case SDL_SCANCODE_X: keyZoomIn = true; break;
             }
 
+            shouldRender = true;
+
 			break;
+
+        case SDL_KEYUP:
+
+            switch (e.key.keysym.scancode)
+            {
+            case SDL_SCANCODE_UP: keyUp = false; break;
+            case SDL_SCANCODE_DOWN: keyDown = false; break;
+            case SDL_SCANCODE_LEFT: keyLeft = false; break;
+            case SDL_SCANCODE_RIGHT: keyRight = false; break;
+            case SDL_SCANCODE_Z: keyZoomOut = false; break;
+            case SDL_SCANCODE_X: keyZoomIn = false; break;
+            }
+
+            shouldRender = true;
+
+            break;
 		}
 
-        // Render
-
-		if ((SDL_GetTicks() - lastRenderTime > FRAMETIME) && shouldRender)
+		if (SDL_GetTicks() - lastFrameTick > MIN_FRAMETIME)
 		{
-            map.setNumberRange(originX, originY, WINDOW_WIDTH * pixelLength, WINDOW_HEIGHT * pixelLength);
-            map.update(threshold);
-            map.update(threshold);
-            map.renderCopy(screen, pixelLength);
+            lastFrameTime = SDL_GetTicks() - lastFrameTick;
+            lastFrameTick = SDL_GetTicks();
+
+            if (keyUp)      { scene.Movement(0, -1 * MOVEPIXEL_PER_MS,  lastFrameTime); }
+            if (keyDown)    { scene.Movement(0, MOVEPIXEL_PER_MS,       lastFrameTime); }
+            if (keyLeft)    { scene.Movement(-1 * MOVEPIXEL_PER_MS, 0,  lastFrameTime); }
+            if (keyRight)   { scene.Movement(MOVEPIXEL_PER_MS, 0,       lastFrameTime); }
+
+            if (keyZoomOut) { scene.Zoom(mouseX, mouseY, 1.01       ); }
+            if (keyZoomIn)  { scene.Zoom(mouseX, mouseY, 1.0 / 1.01 ); }
+
+            // Render
+
+            scene.Update(threshold);
+            scene.RenderCopy(screen);
             SDL_RenderCopy(SDLManager::renderer(), screen, nullptr, nullptr);
-            //map.debugCopy();
+            //scene.DebugCopy();
             SDL_RenderPresent(SDLManager::renderer());
 
-			RLOG(std::setprecision(10) << "origin: (" <<
-                originX << ", " <<
-                originY << ") screen width: " <<
-                pixelLength * WINDOW_WIDTH << " (pixelLength: " <<
-                pixelLength << " )"
-            );
-
-            lastRenderTime += FRAMETIME;
 			shouldRender = false;
 		}
 	}
