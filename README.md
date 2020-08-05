@@ -1,6 +1,6 @@
 # MandelbrotSDL
 
-A mandelbrot set fractal explorer using SDL2.0 for rendering
+Simple library for generating persistent mandelbrot fractal. Reduces computation by storing results, which lowers CPU usage but increases memory usage.
 
 ## Features
 
@@ -8,6 +8,11 @@ A mandelbrot set fractal explorer using SDL2.0 for rendering
 - or use arrow keys to move
 - Use Z/X to zoom, centered at mouse position
 - Set `Graphics` parameters in 'constants.h' to set initial view
+
+## Requirements
+
+- Relies on GPU texture for image resizing, uses SDL2
+- Uses multiple threads
 
 ## Release Notes
 
